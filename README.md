@@ -19,8 +19,8 @@ C'est donc avec docker que nous allons faire tourner notre application vulnérab
 ##### Linux
 
 ```bash
-curl -SL https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+sudo curl -SL https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-linux-x86_64 -o /usr/bin/docker-compose
+sudo chmod +x /usr/bin/docker-compose
 ```
 
 ##### MacOS
@@ -44,7 +44,7 @@ docker-compose up -d
 
 Si vous avez tout bien installé vous devriez voir ceci :
 
-<img src="documentation/images/verification_deploiement.png" style="border-radius: 5px;">
+<img src="documentation/images/verification_deploiement.png" style="border-radius: 5px;box-shadow: 5px 5px 5px #888888;">
 
 ---
 
@@ -91,7 +91,7 @@ On va donc pouvoir scanner et découvrir ce qui se cache derière ce docker grâ
 nmap [addresse_ip]
 ```
 
-<img src="documentation/images/nmap1.png" style="border-radius: 5px;">
+<img src="documentation/images/nmap1.png" style="border-radius: 5px;box-shadow: 5px 5px 5px #888888;">
 
 Dans l'encadré rouge on retrouve les ports que nmap à détecter et en vert l'état ce des ports, en gros soit ils sont accessible soit ils ne le sont pas on aurait alors eu "closed"
 
@@ -105,7 +105,7 @@ Dans notre cas nous allons utilser le paramètre `-A` pour "Agressif" et qui uti
 nmap -A [adresse_ip]
 ```
 
-<img src="documentation/images/nmap2.png" style="border-radius:5px;">
+<img src="documentation/images/nmap2.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 Ahh ! C'est beaucoup mieux !
 
@@ -119,13 +119,13 @@ Ici les informations importantes à retenir sont :
 
 On sait donc qu'il y a un service web sur la machine alors allons voir de quoi il en retourne en nous rendant sur l'adresse depuis votre navigateur préféré : **10.11.0.2:5500** ou simplement **10.11.0.2** puisque cela redirige vers le port 5500
 
-<img src="documentation/images/nmap3.png" style="border-radius:5px;">
+<img src="documentation/images/nmap3.png" style="border-radius:5px;box-shadow: 5px 5px 5px #888888;">
 
 ### Scanning
 
 On a maintenant accées à l'application Wordpress on peut se balader un peu sur le site mais rien de bien interressant... on va donc sur la même idée que la reconnaissance faire un scan ! Ici on est face à une application web classique. Les applications web sont construites avec une multitudes de fichier html, css, php, txt etc...
 
-<img src="documentation/images/arbre_site_web.png">
+<img src="documentation/images/arbre_site_web.png" style="box-shadow: 5px 5px 5px #888888;">
 
 L'objectif va être de découvrir les différents fichiers présent sur le serveur web et peu être trouvé quelque chose d'utile
 
@@ -145,7 +145,7 @@ gobuster dir -u http://[adresse_ip:port] -w SecLists/Discovery/Web-Content/commo
 
 > Le paramètre "-u" permet de spécifier l'adresse du serveur web sur lequel faire les tests. "-w" permet de spécifier une wordlist et enfin le paramètre "-x" permet de specifier des extensions suplémentaires à essayer à la fin de chaque mot de la wordlist.
 
-<img src="documentation/images/scanning1.png" style="border-radius:5px;">
+<img src="documentation/images/scanning1.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 Ce qui est accessible par l'utilisateur est noté par le code **"Status : 200"** ici en vert
 
@@ -162,13 +162,13 @@ http://[adresse_ip:port]/[nom_du_fichier]
 
 On va commencer avec le fichier **robots.txt** !
 
-<img src="documentation/images/scanning2.png" style="border-radius:5px;">
+<img src="documentation/images/scanning2.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 Hmmmm... un message qui provient probablement d'un autre utilisateur et qui nous indique que la combinaison (user:password) est une configuration par défault
 
 Rien d'autre sur ce fichier on peut passer à la suite avec **wp-login**
 
-<img src="documentation/images/scanning3.png" style="border-radius:5px;">
+<img src="documentation/images/scanning3.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 Ahhhh ! Interessant ! On arrive sur une page de connexion à l'interface de wordpress !
 
@@ -182,7 +182,7 @@ Bravo à ceux qui ont trouvé la combinaison ==**admin:admin**==
 
 Vous allez maintenant pouvoir vous connectez sur l'interface admin de wordpress !
 
-<img src="documentation/images/scanning4.png" style="border-radius:5px;">
+<img src="documentation/images/scanning4.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 > Bravo vous y êtes !
 
@@ -194,7 +194,7 @@ Avec quelque recherche sur le web on peut trouver quelque information interessan
 
 > En générale si vous voyez que la machine victime possède une RCE ça sent bon pour vous !
 
-<img src="documentation/images/exploitation1.png" style="border-radius:5px;">
+<img src="documentation/images/exploitation1.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 [Hacktricks](https://book.hacktricks.xyz/) est souvent un très bon point de départ pour comprendre comment exploiter certaines applications et ici on peut apprendre qu'il existe une RCE sur le panel administrateur de wordpress !
 
@@ -206,17 +206,17 @@ http://[adresse_ip:port]/wp-content/themes/[numéro_theme]/404.php
 
 Avec quelques recherche suplémentaire on trouve que ce fichier est modifiable en se rendant sur "Appearance -> Editor"
 
-<img src="documentation/images/exploitation2.png" style="border-radius:5px" height=300px>
+<img src="documentation/images/exploitation2.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;" height=300px>
 
 Puis à droite vous pouvez voir le fameux 404.php ! Cliquez dessus !
 
-<img src="documentation/images/exploitation3.png" style="border-radius:5px;" height=300px>
+<img src="documentation/images/exploitation3.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;" height=300px>
 
 C'est ici que ça deviens technique mais sacrement intéressant ! On a ici du code php et de ce qu'on a lu du code que l'on peut éxécuter sur la machine victime. Dans ce cas ci, la plus part du temps on peut prendre le controle de la machine en utilisant ce que l'on appelle un **Reverse Shell**.
 
 > Mais c'est quoi un Reverse Shell ?
 
-<img src="documentation/images/exploitation4.jpg" style="border-radius:5px;">
+<img src="documentation/images/exploitation4.jpg" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 Comme on peut le voir sur ce schema explicatif si nous essayons de nous connecter à la machine son **firewall** nous bloquera et on ne pourra rien faire. Par contre si c'est la **machine victime qui se connecte à la votre** tout deviens possible ! Et c'est exactement ce que nous allons faire !
 
@@ -227,7 +227,7 @@ Pour que cela fonctionne il nous faut :
 
 Pour le reverse shell en php il éxiste pour notre plus grand plaisir des générateurs. Comme [RevShell](https://www.revshells.com/) !
 
-<img src="documentation/images/exploitation5.png" style="border-radius:5px;">
+<img src="documentation/images/exploitation5.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 Ok !! On retrouve en haut l'adresse IP et le port sur lequel la machine victime va essayer de se connecter ! A gauche vous avez plein de revershell dans une multitudes de language différent mais ici comme vous l'avez compris on a besoin de celui écrit en php.
 
@@ -235,7 +235,7 @@ L'adresse IP avec laquelle vous pouvez communiquer avec votre machine `10.11.0.1
 
 Parfait maintenant copions le code php après avoir entrée les bonnes information. Et copions le à la place du code 404.php dans le panel wordpress.
 
-<img src="documentation/images/exploitation6.png" style="border-radius:5px;">
+<img src="documentation/images/exploitation6.png" style="border-radius:5px; box-shadow: 5px 5px 5px #888888;">
 
 > Collez le code à la place de l'ancien et cliquer sur "Update file"
 
@@ -270,4 +270,4 @@ Avec la commande : `nc -lvnp [port]` vous pouvez écouter sur le port spécifier
 - **"-l"** -> listen
 - **"-p"** -> specifie local port
 - **"-v"** -> verbose
-- **"-n"** numéric-only IP addresses
+- **"-n"** -> numéric-only IP addresses
