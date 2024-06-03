@@ -23,6 +23,10 @@ sudo curl -SL https://github.com/docker/compose/releases/download/v2.17.2/docker
 sudo chmod +x /usr/bin/docker-compose
 ```
 
+```bash
+sudo apt
+```
+
 ##### MacOS
 
 ```bash
@@ -37,7 +41,7 @@ brew install docker-compose
 ```bash
 git clone https://github.com/Nexgear75/empirelabs_wordpress_app.git
 cd empirelabs_wordpress_app
-docker-compose up -d
+sudo docker-compose up -d
 ```
 
 > Ici docker télécharge toute les dépendances dont il a besoin pour faire fonctionner l'application !
